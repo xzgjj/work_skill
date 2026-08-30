@@ -1,6 +1,6 @@
 ---
 name: review-gate
-description: 核心项目「结对编程 + 审查门禁」工作流。触发词（类似关键词即可，无关键词不触发）：审计 / 结对审计 / 同步审计 / 互审 / 彼此审计 / 外审 / 独立审计 / 帮我审 / 审一下 / review / 门禁 / 阶段收口 / consent / 待返工。审计分四档：A 结对审计 · B 同步审计（进行中）· C agent 彼此审计（互审）· D 独立审计（外审）。用法：任何 agent（Claude Code / ChatGPT / DSH）加载本 skill 后，按流程执行，并由 scripts/rg-path 调用 `rg` CLI（项目可独立工作，skill 只负责"教你怎么用+帮你调"）。
+description: 核心项目「结对编程 + 审查门禁」工作流。审计 = 且仅 = 四档（触发词带定语）：结对审计 / 同步审计 / 彼此审计（互审）/ 外审（独立审计）。其他审计（各 agent 内建正常审计、裸词"审计/审一下"）不归本 Skill/主 Agent 管。其余触发词：review / 门禁 / 阶段收口 / consent / 待返工。用法：任何 agent（Claude Code / ChatGPT / DSH）加载本 skill 后，按流程执行，并由 scripts/rg-path 调用 `rg` CLI（项目可独立工作）。
 ---
 
 # review-gate — 结对编程 + 审查门禁 工作流 Skill
@@ -31,13 +31,13 @@ description: 核心项目「结对编程 + 审查门禁」工作流。触发词�
 
 退出码：0=通过 1=待返工 2=配置/参数/台账错误 3=环境错误。
 
-## 四、审计执行方（三端任选 + 双向；四档触发，默认不触发）
-**触发**：类似关键词即可（结对审计 / 同步审计 / 互审 / 彼此审计 / 外审 / 独立审计 / 帮我审 / 审一下）；**无关键词不触发**。
+## 四、审计（四档，定语触发；其他审计不归本流程管）
+**审计 = 且仅 = 四档**（`结对审计`/`同步审计`/`彼此审计(互审)`/`外审(独立审计)`）。**裸词"审计/审一下"与各 agent 内建正常审计不归主 Agent 管**（由用户/所在环境自行处理）。调用权 = 规定场景 + 用户点名；主 Agent 不检测、不决定、不自行调用。
 - **A 结对审计**：你+主 Agent 回合级共审，你主导裁决；
-- **B 同步审计**：项目进行中随时对当前成果全量审一次；
+- **B 同步审计**：随时/阶段收口对当前成果全量审一次（阶段收口版=当前阶段成果全量）；
 - **C 彼此审计（互审）**：我审 CC/ChatGPT 的块（`dsh --profile headless "<包>"`），CC/ChatGPT 审我的块（`rg audit --exec-claude` / 粘贴）；
-- **D 独立审计（外审）**：`rg audit --stage <id> --tool any|dsh-subagent|claude-code|chatgpt [--inline-docs]`，一次性给全（P0/P1/P2+分析）。
-- **自包含**：对外侧执行方一律用 `--inline-docs`（内联 SPEC/方案/CLAUDE.md，外侧无文件访问权）。
+- **D 外审（独立审计）**：`rg audit --stage <id> --tool any|dsh-subagent|claude-code|chatgpt [--inline-docs]`，一次性给全（P0/P1/P2+分析）。
+- **自包含**：对外侧执行方一律用 `--inline-docs`；任一档完成回填 `rg review`（≥3 连续 pass 才可收口）。
 
 ## 五、阶段收口（每阶段，用户 review 后才 git）
 全量测试绿 →（用户要求时）全面审计 → review ≥3 连续 pass → problems 0 错 → **更新文档** → 阶段总结（目的/思路/修改文件按模块分组/代码要点）→ 用户 review → **git 需用户同意**（consent 仅人工）→ 下一阶段在新整数分支（1,2,3…）从 main 派生。
